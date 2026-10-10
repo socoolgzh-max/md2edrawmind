@@ -33,3 +33,4 @@ md2edrawmind/tools/
 # （本地保留该文件，一旦换用带 workflow scope 的 token 即可提交推送）
 /.github/workflows/
 dist/
+*.spec

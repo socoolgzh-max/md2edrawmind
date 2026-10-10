@@ -13,7 +13,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white)](#已知限制)
 [![Offline](https://img.shields.io/badge/100%25-offline-8b5cf6)](#功能)
 
-[快速开始](#快速开始) · [功能](#功能) · [原理](#原理) · [文档](#文档) · [路线图](#路线图)
+[下载](#下载) · [快速开始](#快速开始) · [功能](#功能) · [原理](#原理) · [文档](#文档) · [路线图](#路线图)
 
 ![前后对比](docs/compare.png)
 
@@ -22,6 +22,16 @@
 > **十秒版。** 你让 AI 生成一份复习导图，它给你一段满是公式的 Markdown。你一导入——公式变成了 `\lim_{n \to \infty} S_n = S` 这串原文，或者被拍平成 `limn→∞Sn=S`，甚至整份笔记被换成了另一种字形。
 >
 > 这个工具把它转成 `.docx`：**每条公式都是清晰渲染的图片**，**标题层级在导入后依然成立**。你看到的导图，才是你要的导图。
+
+---
+
+## 下载
+
+**Windows 10 / 11，免安装。** 下载桌面版，解压后双击 `md2edrawmind.exe`，界面会自动在浏览器里打开。
+
+[![下载 Windows 版](https://img.shields.io/badge/%E4%B8%8B%E8%BD%BD-Windows%20x64%20(45%20MB)-b4531f?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/socoolgzh-max/md2edrawmind/releases/latest)
+
+桌面版自带 Python 与 Node 运行时，什么都不用装；公式渲染用你机器上已有的 Chrome 或 Edge。习惯命令行的话看[快速开始](#快速开始)。
 
 ---
 
