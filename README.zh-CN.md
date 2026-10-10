@@ -72,6 +72,8 @@ python -m md2edrawmind convert 笔记.md              # → 笔记.docx
 
 最后：**EdrawMind → 导入 → Word → 选那个 `.docx`**。
 
+界面只有一列：一个拖拽区、一条细线下的三项设置、一行结果。没有账号、不上传、不走云端，375px 宽也能正常用。
+
 <details>
 <summary><b>看看工作流程（动图）</b></summary>
 

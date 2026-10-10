@@ -30,17 +30,25 @@ def _first_dir(*cands):
 
 
 def web_dir() -> str:
-    """静态资源目录"""
-    return _first_dir(os.path.join(PKG_DIR, "web"),
-                      os.path.join(REPO_ROOT, "web")) or os.path.join(PKG_DIR, "web")
+    """静态资源目录。
+
+    源码仓库布局下必须优先用仓库根的 web/（开发时就在那里改），
+    否则会一直读到 tools/sync_assets.py 生成的包内镜像副本。
+    pip 安装后 REPO_ROOT/web 不存在，自然回退到包内的 web/。
+    """
+    repo_web = os.path.join(REPO_ROOT, "web")
+    if os.path.isfile(os.path.join(repo_web, "index.html")):
+        return repo_web
+    return _first_dir(os.path.join(PKG_DIR, "web"), repo_web) or os.path.join(PKG_DIR, "web")
 
 
 def tools_dir() -> str:
     """tools/*.js 所在目录（render.js / mathjax.js）"""
     env = os.environ.get("MD2EDRAW_TOOLS")
-    return _first_dir(env,
-                      os.path.join(PKG_DIR, "tools"),
-                      os.path.join(REPO_ROOT, "tools")) or os.path.join(PKG_DIR, "tools")
+    repo_tools = os.path.join(REPO_ROOT, "tools")
+    if os.path.isfile(os.path.join(repo_tools, "render.js")):
+        return repo_tools
+    return _first_dir(env, os.path.join(PKG_DIR, "tools"), repo_tools) or os.path.join(PKG_DIR, "tools")
 
 
 def node_modules_dir() -> str:

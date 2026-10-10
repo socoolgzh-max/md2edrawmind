@@ -7,48 +7,50 @@
 <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-<div class="bg"></div>
-
 <main class="shell">
+
   <header class="head">
-    <div class="logo" aria-hidden="true">
-      <svg viewBox="0 0 48 48" width="34" height="34">
-        <circle cx="10" cy="24" r="6" fill="currentColor"/>
-        <circle cx="34" cy="10" r="5" fill="currentColor" opacity=".75"/>
-        <circle cx="34" cy="24" r="5" fill="currentColor" opacity=".55"/>
-        <circle cx="34" cy="38" r="5" fill="currentColor" opacity=".35"/>
-        <path d="M15 22 L29 12 M15 24 L29 24 M15 26 L29 36" stroke="currentColor" stroke-width="2" fill="none" opacity=".6"/>
+    <span class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path d="M7.4 12h3.1M13 8.2l2.6-1.9M13 15.8l2.6 1.9" stroke="currentColor"
+              stroke-width="1.5" stroke-linecap="round" opacity=".85"/>
+        <circle cx="5" cy="12" r="2.8" fill="currentColor"/>
+        <circle cx="18" cy="5.4" r="2.2" fill="currentColor" opacity=".7"/>
+        <circle cx="18" cy="12" r="2.2" fill="currentColor" opacity=".85"/>
+        <circle cx="18" cy="18.6" r="2.2" fill="currentColor" opacity=".7"/>
       </svg>
-    </div>
+    </span>
     <div>
-      <h1>md2edrawmind</h1>
-      <p>把带 LaTeX 公式的 Markdown，转成 EdrawMind 能直接导入的 Word</p>
+      <h1 class="title">md2edrawmind</h1>
+      <p class="role">把带 LaTeX 公式的 Markdown，转成思维导图软件能直接导入的 Word</p>
     </div>
-    <span class="badge" id="envBadge">检查环境…</span>
+    <span class="status" id="envBadge"><i></i>检查环境</span>
   </header>
 
-  <section id="drop" class="drop" tabindex="0">
-    <input type="file" id="file" accept=".md,.markdown,.txt" hidden />
-    <svg class="dropIcon" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6">
+  <section id="drop" class="drop" tabindex="0" role="button"
+           aria-label="拖入或选择 Markdown 文件">
+    <input type="file" id="file" accept=".md,.markdown,.txt" />
+    <svg class="dropIcon" viewBox="0 0 24 24" width="34" height="34" fill="none"
+         stroke="currentColor" stroke-width="1.5" aria-hidden="true">
       <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke-linecap="round"/>
       <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke-linecap="round"/>
     </svg>
-    <p class="dropTitle">把 <b>.md</b> 文件拖到这里</p>
-    <p class="dropHint">或者 <button type="button" class="link" id="pick">选择文件</button> · 全程本地运行，不上传任何内容</p>
+    <p class="dropTitle">把 Markdown 文件拖到这里</p>
+    <p class="dropHint">或者 <button type="button" class="link" id="pick">选择文件</button>。全程在本机完成，不上传任何内容</p>
   </section>
 
   <section class="opts">
     <label class="field">
-      <span>公式位置<em>（EdrawMind 里公式夹在文字中间会变批注）</em></span>
+      <span>公式位置 <em>EdrawMind 里公式夹在文字中间会变成批注</em></span>
       <select id="mix">
         <option value="tail" selected>文字在前，公式挪到末尾（推荐）</option>
-        <option value="own">公式单独成一条子主题</option>
+        <option value="own">公式单独成为一条子主题</option>
         <option value="keep">保持原句顺序</option>
       </select>
     </label>
     <label class="field">
-      <span>每个文件最多主题数<em>（免费版导入上限 50）</em></span>
-      <input type="number" id="limit" min="0" max="2000" value="0" placeholder="0 = 不切分" />
+      <span>每个文件最多主题数 <em>免费版导入上限 50</em></span>
+      <input type="number" id="limit" min="0" max="2000" value="0" placeholder="0 表示不切分" />
     </label>
     <label class="check">
       <input type="checkbox" id="outline" />
@@ -59,8 +61,8 @@
   <section id="panel" class="panel hidden">
     <div class="bar"><div class="barFill" id="barFill"></div></div>
     <div class="row">
-      <span id="msg">准备中…</span>
-      <span id="pct" class="pct">0%</span>
+      <span id="msg">准备中</span>
+      <span class="pct" id="pct">0%</span>
     </div>
     <div class="stats" id="stats"></div>
     <ul class="files" id="files"></ul>
@@ -68,14 +70,14 @@
   </section>
 
   <footer class="foot">
-    <span>MIT License</span>
-    <span>·</span>
-    <a href="https://github.com/" id="repoLink" target="_blank" rel="noreferrer">GitHub</a>
-    <span>·</span>
-    <span class="muted">公式用 MathJax 渲染，流程全部在本机完成</span>
+    <span>MIT 许可</span>
+    <span class="sep">·</span>
+    <a href="https://github.com/socoolgzh-max/md2edrawmind" id="repoLink" target="_blank" rel="noreferrer">GitHub</a>
+    <span class="sep">·</span>
+    <span>公式由 MathJax 渲染，流程全在本机</span>
   </footer>
-</main>
 
+</main>
 <script src="/static/app.js"></script>
 </body>
 </html>
