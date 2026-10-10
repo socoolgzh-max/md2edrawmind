@@ -8,6 +8,7 @@ on:
 
 jobs:
   test:
+    name: tests (py${{ matrix.python-version }})
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -29,6 +30,9 @@ jobs:
 
       - name: Parser & docx unit tests
         run: python tests/test_parser.py
+
+      - name: README links & anchors
+        run: python tools/check_readme_links.py
 
       - name: Set up Node
         uses: actions/setup-node@v4

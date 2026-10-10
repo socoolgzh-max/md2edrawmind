@@ -1,0 +1,69 @@
+# md2edrawmind
+
+> Turn AI-generated Markdown notes containing LaTeX formulas into Word (.docx) files that
+> mind-mapping apps — verified against EdrawMind 12.2.2 — import with every formula still
+> readable and the heading hierarchy intact. Runs 100% offline.
+
+Repository: https://github.com/socoolgzh-max/md2edrawmind
+License: MIT
+Language: Python (converter, GUI, CLI) + JavaScript (MathJax formula rendering)
+Platform: Windows (verified); path detection is Windows-oriented
+
+## Problem it solves
+
+Mind-mapping apps parse Markdown as plain text, so `$...$` LaTeX is mangled on import:
+
+- Markdown import: formulas stay literal text
+- HTML import that uses a cloud "smart parse": formulas become tags, simplified Chinese is
+  converted to traditional, hierarchy collapses
+- Word native equations (OMML): the Word importer flattens them into characters, e.g.
+  `\lim_{n \to \infty} S_n = S` becomes `limn→∞Sn=S`
+- SVG formulas: rejected by the importer
+- Working route: render each formula to PNG, embed the pictures in a .docx, and import that
+  .docx locally. Requires `w:outlineLvl` in the document XML for hierarchy to survive.
+
+Additional app quirk: a formula placed in the middle of a topic's text is filed as a
+"comment". Hence the default layout mode `tail` moves formulas to the end of each topic.
+
+## Install
+
+```
+git clone https://github.com/socoolgzh-max/md2edrawmind && cd md2edrawmind
+pip install -r requirements.txt
+npm install
+python -m md2edrawmind check
+```
+
+Requirements: Python 3.9+, Node.js 18+, Google Chrome or Microsoft Edge.
+
+## Use
+
+```
+python -m md2edrawmind serve                  # local GUI on http://127.0.0.1:8787
+python -m md2edrawmind convert notes.md       # writes notes.docx
+python -m md2edrawmind convert notes.md --limit 46 --outline
+```
+
+Then, in the mind-mapping app: Import -> Word -> select the .docx.
+
+CLI layout modes: `--mix tail` (default), `--mix own`, `--mix keep`.
+
+## Key files
+
+- md2edrawmind/parser.py — Markdown/LaTeX parsing, topic tree, formula placement strategies
+- md2edrawmind/docx_writer.py — w:outlineLvl hierarchy, inline formula pictures, splitting
+- md2edrawmind/pipeline.py — orchestrates parse -> render -> slice -> docx
+- md2edrawmind/server.py — local stdlib HTTP server for the GUI (upload, SSE progress, download)
+- md2edrawmind/cli.py — convert / serve / check / install-tools
+- tools/render.js — MathJax -> SVG, formula sheet layout, PNG slicing
+- tools/mathjax.js — MathJax v3 wrapper
+- tests/test_parser.py, tests/smoke_gui.py — unit tests and GUI end-to-end smoke test
+- docs/FINDINGS.md — reverse-engineering notes about the target app's import behaviour
+
+## Known limits
+
+- Formulas are images inside the map: they display but cannot be edited as equations,
+  because the app's Word importer does not support OMML.
+- PDF export from the app still carries its trial watermark (PNG/JPG do not).
+- Multi-line math environments (`aligned`, `cases`) render as a single line.
+- EdrawMind free tier caps Word/HTML/Markdown imports at 50 topics; use `--limit` to split.

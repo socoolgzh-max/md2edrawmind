@@ -1,0 +1,106 @@
+# md2edrawmind — full project description
+
+This file is a machine-readable, self-contained description of the project, intended for
+LLM/agent consumption (per the llms.txt convention). It expands on `llms.txt`.
+
+## What it is
+
+`md2edrawmind` converts Markdown documents that contain LaTeX formulas (`$...$` inline,
+`$$...$$` display) into `.docx` files that mind-mapping applications can import with
+formulas intact. The primary target is EdrawMind (亿图脑图 / 万兴脑图) 12.2.2 on Windows,
+and the format decisions were derived from measured behaviour of that application's
+importers, not from documentation.
+
+Everything runs locally. There is no upload step, no account, and no cloud service.
+
+## Why the naive routes fail (measured, with evidence in docs/FINDINGS.md)
+
+1. **Markdown import** uses a plain-text parser: `$...$` remains literal characters.
+2. **HTML import** is not local at all — the application uploads the file to a cloud AI
+   endpoint (`/ai/pptParse/parseFile`, with a `parse_type` field) and receives a text
+   outline back. Consequences observed: Simplified Chinese content was returned in
+   Traditional characters; heading hierarchy collapsed into a flat list; formulas became
+   markup text.
+3. **Word native equations (OMML)** are not understood by the application's Word importer.
+   It extracts the text runs inside `m:oMath` and concatenates them, producing strings such
+   as `limn→∞Sn=S` from `\lim_{n \to \infty} S_n = S`. Therefore formulas cannot be carried
+   as Office Math.
+4. **SVG** formula images are rejected by the importer; raster PNG is required.
+5. The working combination is: render each formula to PNG, embed those PNGs as inline
+   pictures in a `.docx`, and rely on the application's **local** Word importer.
+
+Two further measured requirements:
+
+- **Hierarchy**: paragraph indentation and bold headings are ignored by the importer.
+  Each paragraph must carry `<w:outlineLvl w:val="N"/>` for the topic tree to be rebuilt.
+  Without it, all topics are flattened under the central topic.
+- **Formula position**: if a topic's content is `text → picture → text`, the picture is
+  filed as a *comment* on the topic instead of being rendered inline. Placing formulas at
+  the end of the topic (`text → picture`) displays correctly. The default `--mix tail`
+  mode implements this; `--mix own` makes each formula its own sub-topic instead.
+
+## Architecture
+
+```
+Markdown (with $LaTeX$)
+   │  md2edrawmind/parser.py         headings + list indentation -> topic tree
+   │                                 split text vs formula, apply placement strategy
+   │  work/formulas.txt              one formula per line
+   │  tools/render.js sheet          MathJax v3 -> SVG (glyphs as paths) -> HTML sheet
+   │                                 with exact pixel boxes for every formula
+   │  headless Chrome screenshot     one PNG containing all formulas
+   │  tools/render.js slice          cut into per-formula PNGs, trim whitespace,
+   │                                 size from the SVG viewBox aspect ratio
+   │  md2edrawmind/docx_writer.py    paragraphs with w:outlineLvl + inline pictures
+   ▼
+.docx  →  app: Import → Word
+```
+
+The GUI (`md2edrawmind/server.py` + `web/`) is a stdlib `http.server` with three endpoints:
+`POST /api/upload` (multipart), `GET /api/progress/<job>` (Server-Sent Events),
+`GET /api/download/<job>/<index>`. `web/app.js` also supports `?demo=1` for screenshots.
+
+## CLI reference
+
+```
+python -m md2edrawmind convert <input.md> [-o out.docx] [--mix tail|own|keep]
+                                        [--limit N] [--work DIR] [--outline]
+python -m md2edrawmind serve [--host H] [--port P] [--no-browser]
+python -m md2edrawmind check
+python -m md2edrawmind install-tools [--force]     # pip installs: fetch mathjax-full, pngjs
+```
+
+`--limit N` recursively descends branches that exceed N nodes, promoting child nodes and
+recording an ancestor-title chain in the part title, so nothing is lost.
+
+## Dependencies
+
+- Python: `python-docx`, `Pillow` (Pillow only for image sizing utilities)
+- Node: `mathjax-full` (TeX → SVG), `pngjs` (PNG crop)
+- External: Chrome or Edge for the headless screenshot step
+
+## Testing
+
+```
+python tests/test_parser.py      # parsing, hierarchy, formula placement, splitting, outline
+python tests/smoke_gui.py 8899   # start server, upload, follow SSE, download, verify docx XML
+python tools/check_readme_links.py   # README anchors and relative links
+```
+
+CI (.github/workflows/ci.yml) runs the unit tests on Windows for Python 3.10 and 3.12 plus a
+MathJax rendering smoke test, and lints README links.
+
+## Known limitations
+
+- Formulas become images; they are not editable equations (the app's Word importer has no
+  OMML support). This is documented rather than worked around.
+- The app's PDF export carries a trial watermark even for picture formulas; PNG/JPG export
+  does not.
+- Multi-line math environments (`aligned`, `cases`) render as one line.
+- The formula sheet screenshot uses a fixed 14000 px canvas height; very large documents
+  should be split with `--limit`.
+- Path detection for Node/Chrome is Windows-oriented; other platforms rely on `PATH`.
+
+## License
+
+MIT.
