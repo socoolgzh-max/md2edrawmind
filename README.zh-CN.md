@@ -89,6 +89,15 @@ python -m md2edrawmind convert 笔记.md --limit 46          # 按主题数上�
 - 图片形式的公式**导出 PNG/JPG 不加水印**，但**导出 PDF 仍会带试用水印**（软件策略）。
 - 浏览器截图这一步依赖窗口高度；超长公式表可以调大 `tools/render.js` 里的 `--window-size`。
 
+## 延伸阅读
+
+| 文档 | 内容 |
+| --- | --- |
+| [docs/FINDINGS.md](docs/FINDINGS.md) | **逆向记录**：EdrawMind 各种导入方式（本地 vs 云端 AI）的真实行为、OMML 为何被拍平、`w:outlineLvl` 的作用、`.emmx` 内部结构 |
+| [docs/FAQ.md](docs/FAQ.md) | 「公式变成批注」「50 主题上限」「水印」「转换失败排查」等常见问题 |
+| [CHANGELOG.md](CHANGELOG.md) | 版本记录 |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 怎么跑测试、怎么新增对另一个软件的支持 |
+
 ## 开发
 
 ```bash

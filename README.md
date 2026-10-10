@@ -89,6 +89,15 @@ notes.md
 - Picture formulas are watermark-free in PNG/JPG export, but **PDF export still carries the app's trial watermark**.
 - The screenshot step depends on window height; for very long formula sheets increase `--window-size` in `tools/render.js`.
 
+## Learn more
+
+| Document | What's inside |
+| --- | --- |
+| [docs/FINDINGS.md](docs/FINDINGS.md) | **Reverse-engineered notes** on how EdrawMind imports files: which routes are local vs cloud AI, why OMML gets flattened, why `w:outlineLvl` matters, and what is inside `.emmx` |
+| [docs/FAQ.md](docs/FAQ.md) | "Formula became a comment", the 50-topic cap, watermark questions, troubleshooting |
+| [CHANGELOG.md](CHANGELOG.md) | Release history |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | How to run tests and how to add support for another app |
+
 ## Development
 
 ```bash
