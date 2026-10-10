@@ -1,0 +1,10 @@
+# 统一换行，避免 Windows/macOS 混用产生噪声
+* text=auto eol=lf
+
+# PowerShell 脚本必须带 BOM，否则 Windows PowerShell 5.1 会按 ANSI 解码导致中文乱码
+*.ps1 text working-tree-encoding=UTF-8 BOM
+
+# 二进制资源
+*.png binary
+*.gif binary
+*.docx binary
