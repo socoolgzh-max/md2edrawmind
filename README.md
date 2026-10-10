@@ -4,6 +4,8 @@
 
 [中文说明](README.zh-CN.md) · English
 
+[![CI](https://github.com/socoolgzh-max/md2edrawmind/actions/workflows/ci.yml/badge.svg)](https://github.com/socoolgzh-max/md2edrawmind/actions/workflows/ci.yml)
+
 ![demo](docs/demo.gif)
 
 ## The problem

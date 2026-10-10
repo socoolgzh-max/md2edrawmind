@@ -27,3 +27,8 @@ Thumbs.db
 md2edrawmind/web/
 md2edrawmind/tools/
 
+# CI 工作流文件：推送需要 PAT 的 workflow scope。
+# 用普通 repo scope 的 PAT 时，请在网页端直接添加：
+#   Add file -> Create new file -> .github/workflows/ci.yml
+# （本地保留该文件，一旦换用带 workflow scope 的 token 即可提交推送）
+/.github/workflows/

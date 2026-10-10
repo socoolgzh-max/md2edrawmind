@@ -5,6 +5,8 @@
 
 [English](README.md) · 中文
 
+[![CI](https://github.com/socoolgzh-max/md2edrawmind/actions/workflows/ci.yml/badge.svg)](https://github.com/socoolgzh-max/md2edrawmind/actions/workflows/ci.yml)
+
 ![演示](docs/demo.gif)
 
 ## 为什么需要它
