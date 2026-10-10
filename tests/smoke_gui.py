@@ -14,10 +14,14 @@ import urllib.request
 import uuid
 import zipfile
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "tools"))
 
-from md2edrawmind.server import run_server          # noqa: E402
+from _utf8 import ensure_utf8                        # noqa: E402
+from md2edrawmind.server import run_server           # noqa: E402
 
+ensure_utf8()
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8899
 BASE = "http://127.0.0.1:%d" % PORT
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

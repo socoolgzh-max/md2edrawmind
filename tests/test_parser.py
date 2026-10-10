@@ -8,10 +8,15 @@ import re
 import sys
 import zipfile
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "tools"))
 
-from md2edrawmind import parser as P                                  # noqa: E402
-from md2edrawmind.docx_writer import DocxBuilder, count_nodes          # noqa: E402
+from _utf8 import ensure_utf8                                  # noqa: E402
+from md2edrawmind import parser as P                           # noqa: E402
+from md2edrawmind.docx_writer import DocxBuilder, count_nodes   # noqa: E402
+
+ensure_utf8()
 
 FAILED = []
 
