@@ -5,7 +5,7 @@
 ## 环境准备
 
 ```bash
-git clone https://github.com/SoCoolp/md2edrawmind && cd md2edrawmind
+git clone https://github.com/socoolgzh-max/md2edrawmind && cd md2edrawmind
 pip install -r requirements.txt
 npm install
 python -m md2edrawmind check        # 应该全绿

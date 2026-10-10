@@ -28,7 +28,7 @@
 **从源码（推荐）：**
 
 ```bash
-git clone https://github.com/SoCoolp/md2edrawmind && cd md2edrawmind
+git clone https://github.com/socoolgzh-max/md2edrawmind && cd md2edrawmind
 pip install -r requirements.txt     # python-docx + Pillow
 npm install                         # mathjax-full + pngjs（渲染公式）
 python -m md2edrawmind check        # 环境自检

@@ -27,9 +27,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/SoCoolp/md2edrawmind"
-Source = "https://github.com/SoCoolp/md2edrawmind"
-Issues = "https://github.com/SoCoolp/md2edrawmind/issues"
+Homepage = "https://github.com/socoolgzh-max/md2edrawmind"
+Source = "https://github.com/socoolgzh-max/md2edrawmind"
+Issues = "https://github.com/socoolgzh-max/md2edrawmind/issues"
 
 [project.scripts]
 md2edrawmind = "md2edrawmind.cli:main"

@@ -9,7 +9,7 @@
 #   2. push main 分支与 v1.0.0 标签
 #   3. 把 remote 换回不含 token 的地址
 param(
-  [string]$Owner = "SoCoolp",
+  [string]$Owner = "socoolgzh-max",
   [string]$Repo  = "md2edrawmind",
   [string]$Token = $env:GITHUB_TOKEN,
   [string]$Description = "Turn Markdown notes with LaTeX formulas into Word files EdrawMind can import with formulas intact"

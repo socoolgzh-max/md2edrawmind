@@ -1,4 +1,4 @@
-﻿# 常见问题（FAQ）
+# 常见问题（FAQ）
 
 ## 为什么公式在导图里是图片，不能像公式对象那样编辑？
 
@@ -61,4 +61,4 @@ python -m md2edrawmind check        # 先看环境是否齐（Node / Chrome / ma
 ## 能支持 XMind / MindManager / Obsidian 吗？
 
 需要**先实测**目标软件能接受什么形态的公式（见 [CONTRIBUTING.md](../CONTRIBUTING.md)），
-欢迎开 [Format 请求](https://github.com/SoCoolp/md2edrawmind/issues/new?template=format_request.md) 并附上你的实测结论。
+欢迎开 [Format 请求](https://github.com/socoolgzh-max/md2edrawmind/issues/new?template=format_request.md) 并附上你的实测结论。
