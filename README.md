@@ -25,6 +25,16 @@
 
 ---
 
+## Download
+
+**Windows 10 / 11, no install needed.** Grab the desktop build, unzip it, double-click `md2edrawmind.exe`, and the interface opens in your browser.
+
+[![Download for Windows](https://img.shields.io/badge/Download-Windows%20x64%20(45%20MB)-b4531f?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/socoolgzh-max/md2edrawmind/releases/latest)
+
+It ships its own Python and Node runtime, so there is nothing to install. Formula rendering uses the Chrome or Edge already on your machine. Prefer the command line? See [Quick start](#quick-start).
+
+---
+
 ## The problem
 
 Mind-map apps parse Markdown as *plain text*. They have no idea what `$...$` means.

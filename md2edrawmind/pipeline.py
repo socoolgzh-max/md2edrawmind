@@ -27,13 +27,18 @@ class PipelineError(RuntimeError):
 
 # ---------------------------------------------------------------- 依赖探测
 def find_node() -> Optional[str]:
+    """桌面端随包的 Node 优先，其次系统 PATH，最后常见安装位置。"""
+    from .paths import bundled_node
+    bundled = bundled_node()
+    if bundled:
+        return bundled
     exe = shutil.which("node")
     if exe:
         return exe
     for cand in (
-        r"D:\Envirment\nvm\nodejs\node.exe",
         r"C:\Program Files\nodejs\node.exe",
         os.path.expandvars(r"%LOCALAPPDATA%\Programs\nodejs\node.exe"),
+        r"D:\Envirment\nvm\nodejs\node.exe",
     ):
         if os.path.exists(cand):
             return cand

@@ -1,18 +1,12 @@
 # -*- coding: utf-8 -*-
-"""资源位置解析：同时支持「源码仓库布局」和「pip 安装后布局」。
+"""资源位置解析，支持三种部署形态：
 
-源码仓库:
-    <root>/md2edrawmind/{cli,parser,...}.py
-    <root>/web/*
-    <root>/tools/*.js
-    <root>/node_modules/mathjax-full
+1. 桌面端   PyInstaller 解包目录，由 desktop_launcher.py 设置 MD2EDRAW_* 环境变量
+2. 源码仓库  <root>/{web,tools,node_modules}
+3. pip 安装  site-packages/md2edrawmind/{web,tools}
 
-pip 安装:
-    site-packages/md2edrawmind/{cli,parser,...}.py
-    site-packages/md2edrawmind/web/*
-    site-packages/md2edrawmind/tools/*.js
-    （node_modules 需由用户在任意位置 npm install mathjax-full，或设置
-      MD2EDRAW_TOOLS 环境变量指向已安装好依赖的 tools 目录）
+环境变量永远优先：桌面端必须用随包的资源，不能因为开发机上也有
+web/ 和 tools/ 就被带偏。
 """
 from __future__ import annotations
 
@@ -30,12 +24,10 @@ def _first_dir(*cands):
 
 
 def web_dir() -> str:
-    """静态资源目录。
-
-    源码仓库布局下必须优先用仓库根的 web/（开发时就在那里改），
-    否则会一直读到 tools/sync_assets.py 生成的包内镜像副本。
-    pip 安装后 REPO_ROOT/web 不存在，自然回退到包内的 web/。
-    """
+    """静态资源目录（含 index.html 的那个）"""
+    env = os.environ.get("MD2EDRAW_WEB")
+    if env and os.path.isfile(os.path.join(env, "index.html")):
+        return env
     repo_web = os.path.join(REPO_ROOT, "web")
     if os.path.isfile(os.path.join(repo_web, "index.html")):
         return repo_web
@@ -45,6 +37,8 @@ def web_dir() -> str:
 def tools_dir() -> str:
     """tools/*.js 所在目录（render.js / mathjax.js）"""
     env = os.environ.get("MD2EDRAW_TOOLS")
+    if env and os.path.isfile(os.path.join(env, "render.js")):
+        return env
     repo_tools = os.path.join(REPO_ROOT, "tools")
     if os.path.isfile(os.path.join(repo_tools, "render.js")):
         return repo_tools
@@ -53,15 +47,20 @@ def tools_dir() -> str:
 
 def node_modules_dir() -> str:
     """mathjax-full / pngjs 的 node_modules 目录"""
-    env = os.environ.get("MD2EDRAW_NODE_MODULES")
-    return _first_dir(env,
+    return _first_dir(os.environ.get("MD2EDRAW_NODE_MODULES"),
                       os.path.join(tools_dir(), "node_modules"),
                       os.path.join(REPO_ROOT, "node_modules"),
                       os.path.join(PKG_DIR, "node_modules")) or os.path.join(REPO_ROOT, "node_modules")
 
 
+def bundled_node() -> str | None:
+    """桌面端随包的 Node 运行时（优先使用，用户机器上无需装 Node）"""
+    p = os.environ.get("MD2EDRAW_NODE")
+    return p if p and os.path.isfile(p) else None
+
+
 def has_node_deps() -> bool:
-    """mathjax-full / pngjs 是否可用（检查所有候选 node_modules）"""
+    """mathjax-full 是否可用"""
     cands = [os.environ.get("MD2EDRAW_NODE_MODULES"),
              os.path.join(tools_dir(), "node_modules"),
              os.path.join(REPO_ROOT, "node_modules"),
