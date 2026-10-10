@@ -9,6 +9,15 @@ import sys
 from . import pipeline
 
 
+def _utf8_console() -> None:
+    """Windows 控制台默认可能是 GBK，遇到 ⚠ ✔ 之类的字符会直接崩。统一成 UTF-8。"""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")   # type: ignore[union-attr]
+        except Exception:
+            pass
+
+
 def cmd_convert(args) -> int:
     if not os.path.exists(args.input):
         print("[错误] 找不到文件：%s" % args.input, file=sys.stderr)
@@ -42,6 +51,35 @@ def cmd_convert(args) -> int:
     return 0
 
 
+def cmd_install_tools(args) -> int:
+    """给 pip 安装的用户准备公式渲染依赖（在包内 tools/ 目录里 npm install）。"""
+    import subprocess
+    from .paths import has_node_deps, tools_dir
+
+    td = tools_dir()
+    if has_node_deps() and not args.force:
+        print("公式渲染依赖已就绪：%s" % os.path.join(tools_dir(), "node_modules"))
+        return 0
+    npm = shutil_which("npm") or "npm"
+    print("在 %s 里安装 mathjax-full 与 pngjs …" % td)
+    try:
+        rc = subprocess.call([npm, "install", "--no-audit", "--no-fund",
+                              "mathjax-full", "pngjs"], cwd=td, shell=(os.name == "nt"))
+    except FileNotFoundError:
+        print("[错误] 找不到 npm，请先安装 Node.js 18+", file=sys.stderr)
+        return 1
+    if rc != 0:
+        print("[错误] npm install 失败（退出码 %d）" % rc, file=sys.stderr)
+        return 1
+    print("完成。现在可以运行：md2edrawmind serve")
+    return 0
+
+
+def shutil_which(name):
+    import shutil
+    return shutil.which(name)
+
+
 def cmd_serve(args) -> int:
     from .server import run_server
     return run_server(host=args.host, port=args.port, open_browser=not args.no_browser)
@@ -62,14 +100,17 @@ def cmd_check(args) -> int:
     ok = ok and bool(node)
     print("  浏览器  : %s" % (chrome or "缺失  → 安装 Chrome / Edge（公式转图片需要）"))
     ok = ok and bool(chrome)
-    pkg = os.path.join(os.path.dirname(pipeline.tools_dir()), "node_modules", "mathjax-full")
-    print("  mathjax-full : %s" % ("已安装" if os.path.isdir(pkg) else "缺失  → npm install"))
-    ok = ok and os.path.isdir(pkg)
+    from .paths import has_node_deps, node_modules_dir
+    deps = has_node_deps()
+    print("  mathjax-full : %s" % ("已安装（%s）" % node_modules_dir() if deps
+                                   else "缺失  → 运行 md2edrawmind install-tools"))
+    ok = ok and deps
     print("\n结论：%s" % ("环境就绪 ✔" if ok else "还有缺失，先补齐上面的项 ✘"))
     return 0 if ok else 1
 
 
 def main(argv=None) -> int:
+    _utf8_console()
     ap = argparse.ArgumentParser(prog="md2edrawmind",
                                  description="把带 LaTeX 公式的 Markdown 转成可直接导入 EdrawMind 的 Word")
     sub = ap.add_subparsers(dest="cmd")
@@ -90,6 +131,10 @@ def main(argv=None) -> int:
     s.add_argument("--port", type=int, default=8787)
     s.add_argument("--no-browser", action="store_true", help="不自动打开浏览器")
     s.set_defaults(func=cmd_serve)
+
+    t = sub.add_parser("install-tools", help="pip 安装后准备公式渲染依赖（npm install）")
+    t.add_argument("--force", action="store_true", help="即使已存在也重新安装")
+    t.set_defaults(func=cmd_install_tools)
 
     k = sub.add_parser("check", help="检查依赖环境")
     k.set_defaults(func=cmd_check)

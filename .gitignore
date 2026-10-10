@@ -22,3 +22,8 @@ output.docx
 .idea/
 .DS_Store
 Thumbs.db
+
+# 打包时镜像的资源（由 tools/sync_assets.py 生成）
+md2edrawmind/web/
+md2edrawmind/tools/
+

@@ -117,3 +117,36 @@ function fail(msg) {
   $('barFill').style.width = '100%';
   $('barFill').style.background = 'linear-gradient(90deg,#f87171,#dc2626)';
 }
+
+/* ---------------- 演示模式：?demo=1[&state=progress|done] ----------------
+   不连接后端，只渲染界面状态；用于 README 截图/GIF 与产品展示。 */
+(function demoMode() {
+  const q = new URLSearchParams(location.search);
+  if (!q.has('demo')) return;
+  const state = q.get('state') || 'empty';
+  if (state === 'empty') return;
+
+  const panel = $('panel');
+  panel.classList.remove('hidden');
+  const pct = state === 'done' ? 100 : 62;
+  $('barFill').style.width = pct + '%';
+  $('pct').textContent = pct + '%';
+  $('msg').textContent = state === 'done'
+    ? '完成 —— 下一步：EdrawMind → 导入 → Word'
+    : '渲染公式（浏览器无头截图）…';
+  $('log').textContent = [
+    '解析 Markdown…',
+    '识别到 94 个主题、113 条公式',
+    '排版公式表…',
+    state === 'done' ? '渲染公式（浏览器无头截图）…\n切分公式图片…\n生成 Word…' : '渲染公式（浏览器无头截图）…',
+  ].join('\n');
+  if (state === 'done') {
+    $('stats').textContent = '主题 94 个 · 公式 113 条';
+    currentJob = 'demo';
+    renderFiles([{ name: 'output.docx', size: 246000 }]);
+    document.querySelectorAll('.files a').forEach((a) => {
+      a.removeAttribute('href');
+      a.addEventListener('click', (e) => e.preventDefault());
+    });
+  }
+})();

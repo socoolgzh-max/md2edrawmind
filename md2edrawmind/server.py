@@ -12,6 +12,7 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from . import pipeline
+from .paths import web_dir
 
 
 def parse_multipart(body: bytes, content_type: str):
@@ -42,7 +43,7 @@ def parse_multipart(body: bytes, content_type: str):
         }
     return out
 
-WEB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web")
+WEB_DIR = web_dir()
 
 # 任务表：id -> {status, pct, log[], files[], error}
 JOBS = {}

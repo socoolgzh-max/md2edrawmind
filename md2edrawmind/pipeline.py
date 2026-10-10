@@ -16,6 +16,7 @@ from typing import Callable, Dict, List, Optional
 
 from . import parser as md_parser
 from .docx_writer import DocxBuilder, load_images
+from .paths import node_modules_dir, tools_dir
 
 Progress = Callable[[str, int], None]     # (消息, 0-100)
 
@@ -56,8 +57,9 @@ def find_chrome() -> Optional[str]:
     return None
 
 
-def tools_dir() -> str:
-    return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools")
+def tools_dir_js() -> str:
+    """tools/*.js 的目录（兼容源码布局与 pip 安装布局）"""
+    return tools_dir()
 
 
 # ---------------------------------------------------------------- 结果
@@ -146,9 +148,12 @@ def convert(
     if not chrome:
         raise PipelineError("找不到 Chrome/Edge（把公式渲染成图片需要）。请安装后重试。")
 
-    render_js = os.path.join(tools_dir(), "render.js")
+    render_js = os.path.join(tools_dir_js(), "render.js")
     if not os.path.exists(render_js):
         raise PipelineError("工具缺失：%s" % render_js)
+    if not os.path.isdir(os.path.join(node_modules_dir(), "mathjax-full")):
+        raise PipelineError("缺少公式渲染依赖。请在工具目录执行：npm install mathjax-full pngjs\n"
+                            "（或设置环境变量 MD2EDRAW_NODE_MODULES 指向已安装的 node_modules）")
 
     say("排版公式表…", 25)
     _run([node, render_js, "sheet", work_dir], "公式排版失败")
