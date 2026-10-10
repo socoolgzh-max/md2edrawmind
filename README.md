@@ -2,178 +2,197 @@
 
 # md2edrawmind
 
-**Turn AI-generated Markdown notes full of `$LaTeX$` into Word files your mind-map app imports — with every formula still readable.**
+**把 AI 生成的「满屏 `$LaTeX$` 公式」的 Markdown 笔记，转成思维导图软件能正常导入的 Word —— 公式一条都不丢。**
 
-[中文说明](README.zh-CN.md) · English
+中文 · [English](README.en.md)
 
 [![CI](https://github.com/socoolgzh-max/md2edrawmind/actions/workflows/ci.yml/badge.svg)](https://github.com/socoolgzh-max/md2edrawmind/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](pyproject.toml)
 [![Node](https://img.shields.io/badge/Node-18%2B-339933?logo=nodedotjs&logoColor=white)](package.json)
-[![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white)](#known-limits)
-[![Offline](https://img.shields.io/badge/100%25-offline-8b5cf6)](#features)
+[![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white)](#已知限制)
+[![Offline](https://img.shields.io/badge/100%25-offline-8b5cf6)](#功能)
 
-[Quick start](#quick-start) · [Features](#features) · [How it works](#how-it-works) · [Docs](#documentation) · [Roadmap](#roadmap)
-
-![Before / after](docs/compare.png)
+[下载](#下载) · [快速开始](#快速开始) · [功能](#功能) · [原理](#原理) · [文档](#文档) · [路线图](#路线图)
 
 </div>
 
-> **The 10-second version.** You asked an LLM for a mind map of your revision notes. It gave you Markdown full of formulas. You imported it — and the formulas turned into `\lim_{n \to \infty} S_n = S` gibberish, or got flattened to `limn→∞Sn=S`, or the whole note came back in the wrong script.
->
-> This tool converts that Markdown into a `.docx` where **every formula is a crisp rendered image** and **the heading hierarchy survives the import** — so the map you see is the map you wanted.
+## 界面
+
+一个拖拽区、一条细线下的三项设置、一行结果。没有账号、不上传、不走云端，窄到手机宽度也能正常用。
+
+![软件界面](docs/gui.png)
+
+<div align="center">
+
+![前后对比：普通导入 vs 本工具输出](docs/compare.png)
+
+</div>
+
+## 简介
+
+你可能遇到过这个场景：让 AI 把复习笔记整理成思维导图，它吐出一份写满 `$\lim_{n \to \infty} S_n = S$` 的 Markdown。你兴冲冲导入 EdrawMind，结果公式全变成了 LaTeX 原文，或者被拍平成 `limn→∞Sn=S`；换个入口走 HTML 导入，简体字又整个变成了繁体。
+
+这不是你操作错了。**思维导图软件把 Markdown 当纯文本读，它根本不认识 `$...$` 是什么。** 而它的 Word 导入也不解析 Office 数学公式（OMML），所以「转成带公式的 Word」这条路同样走不通。
+
+md2edrawmind 换了个思路：**把每条公式渲染成图片嵌进 Word，用 `w:outlineLvl` 保住标题层级**，于是导图里公式是清晰的图、层级是完整的树。整份笔记 115 行、113 条公式，实测一次转换约 2 秒，全程离线。
+
+- **公式不丢**：MathJax 渲染成 SVG 再切成 PNG，一条公式一张图
+- **层级不乱**：写入 Word 真正的 outline level，不是靠缩进或加粗伪装
+- **顺序有讲究**：公式放在主题文字**末尾**，夹在中间会被软件识别成批注
+- **全程离线**：本机跑完，不调用任何云服务，不上传你的笔记
 
 ---
 
-## Download
+## 下载
 
-**Windows 10 / 11, no install needed.** Grab the desktop build, unzip it, double-click `md2edrawmind.exe`, and the interface opens in your browser.
+**Windows 10 / 11，免安装。** 下载桌面版，解压后双击 `md2edrawmind.exe`，界面会自动在浏览器里打开。
 
-[![Download for Windows](https://img.shields.io/badge/Download-Windows%20x64%20(45%20MB)-b4531f?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/socoolgzh-max/md2edrawmind/releases/latest)
+[![下载 Windows 版](https://img.shields.io/badge/%E4%B8%8B%E8%BD%BD-Windows%20x64%20(45%20MB)-b4531f?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/socoolgzh-max/md2edrawmind/releases/latest)
 
-It ships its own Python and Node runtime, so there is nothing to install. Formula rendering uses the Chrome or Edge already on your machine. Prefer the command line? See [Quick start](#quick-start).
+桌面版自带 Python 与 Node 运行时，什么都不用装；公式渲染用你机器上已有的 Chrome 或 Edge。习惯命令行的话看[快速开始](#快速开始)。
 
 ---
 
-## The problem
+## 为什么需要它
 
-Mind-map apps parse Markdown as *plain text*. They have no idea what `$...$` means.
+思维导图软件是把 Markdown 当**纯文本**解析的，它根本不知道 `$...$` 是什么。
 
-We tested this the hard way — the full log is in [docs/FINDINGS.md](docs/FINDINGS.md). Summary:
+下面这些结论都是实测出来的（完整记录见 [docs/FINDINGS.md](docs/FINDINGS.md)）：
 
-| Route | What happens |
+| 导入方式 | 结果 |
 | --- | --- |
-| Import Markdown | ✗ formulas stay literal text |
-| Import HTML via "smart parse" | ✗ goes through a cloud AI: **simplified Chinese silently becomes traditional**, hierarchy collapses, formulas become tags |
-| Native Word equations (OMML) | ✗ the Word importer does not understand OMML — it **flattens formulas into characters**: `limn→∞Sn=S` |
-| Vector SVG formulas | ✗ the importer rejects SVG |
-| **Render formulas to PNG → import Word locally** | ✓ formulas survive, hierarchy intact, nothing is rewritten |
+| 导入 Markdown | ✗ 公式原样变成文字 |
+| 导入 HTML（走「智能解析」） | ✗ 走云端 AI：**简体被悄悄转成繁体**、层级塌掉、公式变成标签 |
+| Word 原生公式（OMML） | ✗ Word 导入器不认 OMML，会把公式**拍平成字符**：`limn→∞Sn=S` |
+| 公式用 SVG 矢量图 | ✗ 导入器拒绝 SVG |
+| **公式渲染成 PNG → 本地导入 Word** | ✓ 公式保留、层级正确、文字不被改写 |
 
-There is one more trap: **a formula sitting in the middle of a topic's text gets filed as a "comment"**. This tool moves formulas to the *end* of each topic by default — the layout that actually works.
+还有一个坑：**公式夹在主题文字中间时，会被当成「批注」**。所以本工具默认把公式**挪到主题末尾**——这是实测能正常显示的形态。
 
-## Features
+## 功能
 
 | | |
 | --- | --- |
-| **Formulas that survive** | MathJax v3 renders every `$...$` to an image at import-safe size — fractions, sums, integrals, limits all intact |
-| **Hierarchy that survives** | writes `w:outlineLvl` (the flag outline importers actually read), not just indentation |
-| **Local GUI** | `python -m md2edrawmind serve` → drag a `.md`, watch progress, download the `.docx` |
-| **CLI** | `convert` / `serve` / `check` / `install-tools` — scriptable, CI-friendly |
-| **100% offline** | no uploads, no accounts, no cloud AI: your notes never leave the machine |
-| **No watermark** | exported formula images are not watermarked (see [Known limits](#known-limits)) |
-| **Auto-split** | free tiers cap imports at 50 topics — `--limit 46` splits the output automatically |
-| **Three layout modes** | `tail` (formula last), `own` (formula as its own sub-topic), `keep` (original order) |
+| **公式不丢** | MathJax v3 把每个 `$...$` 渲染成适合导入的图片，分式、求和、积分、极限全部完整 |
+| **层级不塌** | 写入 `w:outlineLvl`（大纲导入真正读取的标记），而不是只靠缩进 |
+| **本地图形界面** | `python -m md2edrawmind serve` → 拖入 `.md` → 看进度 → 下载 `.docx` |
+| **命令行** | `convert` / `serve` / `check` / `install-tools`，可脚本化、可进 CI |
+| **全程离线** | 不上传、不登录、不走云端 AI：笔记不离开这台机器 |
+| **无水印** | 导出的公式图片不带水印（细节见[已知限制](#已知限制)） |
+| **自动切分** | 免费版导入上限 50 个主题，`--limit 46` 会自动切分 |
+| **三种排版** | `tail`（公式在末尾）/ `own`（公式单独成条）/ `keep`（保持原句） |
 
-## Quick start
+## 快速开始
 
 ```bash
 git clone https://github.com/socoolgzh-max/md2edrawmind && cd md2edrawmind
-pip install -r requirements.txt && npm install     # python-docx, Pillow, mathjax-full, pngjs
-python -m md2edrawmind check                       # verifies Python / Node / browser
+pip install -r requirements.txt && npm install     # python-docx、Pillow、mathjax-full、pngjs
+python -m md2edrawmind check                       # 自检 Python / Node / 浏览器
 ```
 
-Then either:
+然后二选一：
 
 ```bash
-python -m md2edrawmind serve                       # GUI at http://127.0.0.1:8787
-# or
-python -m md2edrawmind convert notes.md            # → notes.docx
+python -m md2edrawmind serve                       # 图形界面 http://127.0.0.1:8787
+# 或
+python -m md2edrawmind convert 笔记.md              # → 笔记.docx
 ```
 
-Finally: **EdrawMind → Import → Word → pick the `.docx`**.
+最后：**EdrawMind → 导入 → Word → 选那个 `.docx`**。
 
-The interface is one column: a drop zone, three secondary options under a hairline rule, and a result row. No account, no upload, no cloud. It stays usable down to 375px.
+界面只有一列：一个拖拽区、一条细线下的三项设置、一行结果。没有账号、不上传、不走云端，375px 宽也能正常用。
 
 <details>
-<summary><b>See the workflow (animated)</b></summary>
+<summary><b>看看工作流程（动图）</b></summary>
 
-![demo](docs/demo.gif)
+![演示](docs/demo.gif)
 
 </details>
 
 <details>
-<summary><b>Install from PyPI instead</b></summary>
+<summary><b>改用 PyPI 安装</b></summary>
 
 ```bash
 pip install md2edrawmind
-md2edrawmind install-tools        # fetches the JS formula renderer (mathjax-full, pngjs)
+md2edrawmind install-tools        # 拉取 JS 公式渲染器（mathjax-full、pngjs）
 md2edrawmind check
 ```
 
 </details>
 
 <details>
-<summary><b>All CLI options</b></summary>
+<summary><b>全部命令行参数</b></summary>
 
-| Option | Meaning |
+| 参数 | 说明 |
 | --- | --- |
-| `--mix tail` | **default** — text first, formulas moved to the end of the topic (most reliable) |
-| `--mix own` | each formula becomes its own sub-topic |
-| `--mix keep` | keep the original sentence order (mid-text formulas become comments) |
-| `--limit N` | at most N topics per output file (auto-split; free tiers cap at 50) |
-| `--outline` | also write a tab-indented plain-text outline as a fallback import route |
-| `--work DIR` | where intermediate files (formula sheet, formula PNGs) go |
+| `--mix tail` | **默认**。文字在前，公式挪到主题末尾（最稳） |
+| `--mix own` | 每条公式单独成为一条子主题 |
+| `--mix keep` | 保持原句顺序（公式夹在中间会变批注） |
+| `--limit N` | 每个文件最多 N 个主题，超出自动切分（免费版上限 50） |
+| `--outline` | 同时导出制表符缩进的纯文本大纲（备用导入方式） |
+| `--work DIR` | 指定中间文件目录（公式表、公式图片） |
 
 </details>
 
-## How it works
+## 原理
 
 ```
-notes.md
+笔记.md
   │
-  ├─ parser.py         headings/lists → topic tree; text vs formula; layout strategy
+  ├─ parser.py        标题/列表 → 主题树；拆分文字与公式；应用排版策略
   │
-  ├─ tools/render.js   MathJax v3 → SVG (glyphs as paths, no font dependency)
-  │                    → every formula laid out on one precisely measured sheet
+  ├─ tools/render.js  MathJax v3 → SVG（字形转路径，不依赖字体）
+  │                   → 把所有公式排到一张精确测量过的"公式表"上
   │
-  ├─ headless Chrome   a single screenshot renders all formulas at once
+  ├─ Chrome 无头截图   一次截图渲染全部公式
   │
-  ├─ tools/render.js   slice the sheet into one trimmed PNG per formula
+  ├─ tools/render.js  按坐标切成一张张去白边的 PNG
   │
-  └─ docx_writer.py    w:outlineLvl hierarchy + inline pictures → .docx
+  └─ docx_writer.py   写入 w:outlineLvl 层级 + 内嵌公式图片 → .docx
 ```
 
-No LaTeX distribution, no pandoc, no Office required — just Node and a browser for rendering.
+不需要装 LaTeX、不需要 pandoc、不需要 Office —— 只要 Node 和一个浏览器。
 
-## Documentation
+## 文档
 
-| Document | Contents |
+| 文档 | 内容 |
 | --- | --- |
-| [docs/FINDINGS.md](docs/FINDINGS.md) | **Reverse-engineering log**: which import routes are local vs cloud, why OMML gets flattened, why `w:outlineLvl` matters, what lives inside `.emmx` |
-| [docs/FAQ.md](docs/FAQ.md) | "formula became a comment", the 50-topic cap, watermark questions, troubleshooting |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | how to run the tests; how to add support for another app (with an evidence checklist) |
-| [CHANGELOG.md](CHANGELOG.md) | release history |
+| [docs/FINDINGS.md](docs/FINDINGS.md) | **逆向记录**：哪些导入方式走本地、哪些走云端；OMML 为何被拍平；`w:outlineLvl` 的作用；`.emmx` 内部结构 |
+| [docs/FAQ.md](docs/FAQ.md) | 「公式变成批注」「50 主题上限」「水印」「转换失败排查」 |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 怎么跑测试；怎么新增对另一个软件的支持（附证据清单） |
+| [CHANGELOG.md](CHANGELOG.md) | 版本记录 |
 
-## Known limits
+## 已知限制
 
 > [!IMPORTANT]
-> Formulas end up as **images** inside the map. They display perfectly but cannot be re-edited as equations, because the target app's Word importer does not support OMML. That is the app's limitation — this tool documents it rather than hiding it.
+> 公式在导图里是**图片**：显示完美，但不能像公式对象那样二次编辑 —— 因为目标软件的 Word 导入不支持 OMML。这是软件的限制，本工具选择把它写清楚，而不是藏着。
 
-- Built and verified against **EdrawMind 12.2.2 on Windows**; other apps need their own format work ([issues welcome](https://github.com/socoolgzh-max/md2edrawmind/issues)).
-- Formulas are watermark-free in PNG/JPG export, but **PDF export still carries the app's trial watermark** (app policy — a converter cannot bypass it).
-- Multi-line environments (`aligned`, `cases`) currently render as a single line.
-- Chrome/Edge is required for the render step; the screenshot canvas is fixed at 14000px tall, so very large notes should use `--limit` to split.
+- 针对 **EdrawMind 12.2.2（Windows）** 实测与验证；换其他软件需要另做格式适配（欢迎[提 issue](https://github.com/socoolgzh-max/md2edrawmind/issues)）。
+- 公式图片在 PNG/JPG 导出**无水印**，但 **PDF 导出仍带软件试用水印**（软件策略，转换器绕不过去）。
+- 多行公式环境（`aligned`、`cases`）目前按单行渲染。
+- 渲染需要 Chrome 或 Edge；截图画布固定 14000px 高，超长笔记请用 `--limit` 切分。
 
-## Roadmap
+## 路线图
 
-- [x] GUI + CLI + PyPI packaging
-- [x] `docs/FINDINGS.md` — reverse-engineering notes
-- [x] A 113-formula stress example in `examples/`
-- [ ] Adapter for a second target app (XMind / FreeMind), **after** measuring its import behaviour
-- [ ] Multi-line formula environments (`aligned`, `cases`)
-- [ ] macOS / Linux path detection and packaging
+- [x] 图形界面 + 命令行 + PyPI 打包
+- [x] `docs/FINDINGS.md` 逆向记录
+- [x] `examples/` 里的 113 条公式压力样例
+- [ ] 适配第二个目标软件（XMind / FreeMind），**先实测**其导入行为
+- [ ] 多行公式环境（`aligned`、`cases`）
+- [ ] macOS / Linux 的路径探测与打包
 
-## Contributing
+## 参与贡献
 
 ```bash
-python tests/test_parser.py         # parser + docx unit tests (no browser needed)
-python tests/smoke_gui.py 8899      # GUI end-to-end: upload → progress → download → verify
+python tests/test_parser.py         # 解析器 + docx 单元测试（不需要浏览器）
+python tests/smoke_gui.py 8899      # GUI 闭环：上传 → 进度 → 下载 → 校验 docx
 python -m md2edrawmind convert examples/考研数学-无穷级数.md -o build/check.docx
 ```
 
-Fork → branch → PR. If you are adding support for another app, measure its import behaviour
-first and record the evidence in `docs/FINDINGS.md` — see [CONTRIBUTING.md](CONTRIBUTING.md).
+Fork → 新建分支 → 提 PR。如果要支持另一个软件，请**先实测它的导入行为**，并把证据写进
+`docs/FINDINGS.md` —— 详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-## License
+## 许可证
 
-[MIT](LICENSE) — do whatever you want with it.
+[MIT](LICENSE) —— 随便用。

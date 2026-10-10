@@ -35,7 +35,7 @@ def anchors(md: str):
 
 def main() -> int:
     bad = []
-    for name in ("README.md", "README.zh-CN.md"):
+    for name in ("README.md", "README.en.md"):
         path = os.path.join(ROOT, name)
         if not os.path.exists(path):
             print("缺少", name)
