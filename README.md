@@ -72,6 +72,8 @@ python -m md2edrawmind convert notes.md            # → notes.docx
 
 Finally: **EdrawMind → Import → Word → pick the `.docx`**.
 
+The interface is one column: a drop zone, three secondary options under a hairline rule, and a result row. No account, no upload, no cloud. It stays usable down to 375px.
+
 <details>
 <summary><b>See the workflow (animated)</b></summary>
 
