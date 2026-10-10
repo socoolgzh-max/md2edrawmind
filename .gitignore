@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# 本地产物
+build/
+work/
+_work/
+*.docx
+!examples/**/*.docx
+output.docx
+
+# 编辑器
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
