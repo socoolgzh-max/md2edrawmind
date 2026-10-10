@@ -72,7 +72,12 @@ python -m md2edrawmind convert 笔记.md              # → 笔记.docx
 
 最后：**EdrawMind → 导入 → Word → 选那个 `.docx`**。
 
-![图形界面](docs/gui.png)
+<details>
+<summary><b>看看工作流程（动图）</b></summary>
+
+![演示](docs/demo.gif)
+
+</details>
 
 <details>
 <summary><b>改用 PyPI 安装</b></summary>

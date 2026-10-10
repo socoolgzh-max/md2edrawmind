@@ -8,6 +8,12 @@ import re
 import sys
 import unicodedata
 
+try:  # Windows 控制台可能是 GBK，输出 ✔ 会崩
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 

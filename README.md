@@ -72,7 +72,12 @@ python -m md2edrawmind convert notes.md            # → notes.docx
 
 Finally: **EdrawMind → Import → Word → pick the `.docx`**.
 
-![GUI](docs/gui.png)
+<details>
+<summary><b>See the workflow (animated)</b></summary>
+
+![demo](docs/demo.gif)
+
+</details>
 
 <details>
 <summary><b>Install from PyPI instead</b></summary>
