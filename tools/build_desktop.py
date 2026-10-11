@@ -11,6 +11,7 @@
 """
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
@@ -41,6 +42,35 @@ def find_node() -> str:
     raise SystemExit("找不到 node.exe，无法随包分发 Node 运行时")
 
 
+def resolve_packages(root_pkgs=("mathjax-full", "pngjs")) -> list:
+    """递归解析运行时依赖，避免漏掉传递依赖。
+
+    踩过的坑：最初只拷 mathjax-full 与 pngjs，漏了它依赖的 mhchemparser，
+    于是打包版渲染公式时 require 失败（开发机上根 node_modules 里本来就有，
+    所以完全看不出来），表现是转换卡在 25% 然后报「出错了」。
+    """
+    nm = os.path.join(ROOT, "node_modules")
+    seen, queue = set(), list(root_pkgs)
+    while queue:
+        name = queue.pop(0)
+        if name in seen:
+            continue
+        pkg_json = os.path.join(nm, name, "package.json")
+        if not os.path.isfile(pkg_json):
+            print("    [警告] 依赖缺失: %s" % name)
+            continue
+        seen.add(name)
+        try:
+            with open(pkg_json, encoding="utf-8") as fh:
+                meta = json.load(fh)
+        except Exception:
+            meta = {}
+        for dep in (meta.get("dependencies") or {}):
+            if dep not in seen:
+                queue.append(dep)
+    return sorted(seen)
+
+
 def copy_tree(src: str, dst: str, skip_dirs=()):
     ignore = shutil.ignore_patterns("__pycache__", "*.pyc")
     shutil.copytree(src, dst, ignore=ignore, dirs_exist_ok=True)
@@ -60,15 +90,18 @@ def stage() -> str:
     copy_tree(os.path.join(ROOT, "tools"), os.path.join(STAGE, "tools"),
               skip_dirs=("__pycache__",))
 
-    print("[stage] node_modules（裁剪 mathjax 的 es5/ts）")
+    pkgs = resolve_packages()
+    print("[stage] node_modules：%d 个包" % len(pkgs))
+    print("        " + ", ".join(pkgs))
     nm_src = os.path.join(ROOT, "node_modules")
     nm_dst = os.path.join(STAGE, "node_modules")
-    for pkg in ("mathjax-full", "pngjs"):
+    for pkg in pkgs:
         src = os.path.join(nm_src, pkg)
         if not os.path.isdir(src):
             raise SystemExit("缺少依赖 %s，请先 npm install" % pkg)
-        copy_tree(src, os.path.join(nm_dst, pkg),
-                  skip_dirs=MATHJAX_SKIP if pkg == "mathjax-full" else ())
+        # mathjax-full 的 es5（老浏览器打包产物）与 ts（源码）运行时用不到
+        skip = MATHJAX_SKIP if pkg == "mathjax-full" else ()
+        copy_tree(src, os.path.join(nm_dst, pkg), skip_dirs=skip)
 
     print("[stage] Node 运行时")
     node_dst_dir = os.path.join(STAGE, "node")
