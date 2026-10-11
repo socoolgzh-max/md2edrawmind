@@ -94,16 +94,50 @@ function follow(jobId) {
   es.onerror = () => es.close();
 }
 
+/* 桌面端（pywebview）里，WebView2 会把 <a href> 触发的下载静默取消
+   （pywebview 把 ALLOW_DOWNLOADS 写死为 False，且没有对外开关）。
+   所以桌面端改为调用 JS 桥，用原生「另存为」对话框落盘；
+   浏览器里仍走普通下载链接。 */
+function desktopBridge() {
+  return (window.pywebview && window.pywebview.api && window.pywebview.api.save_file)
+    ? window.pywebview.api
+    : null;
+}
+
+function fileRow(f, i) {
+  const kb = Math.max(1, Math.round(f.size / 1024));
+  const li = document.createElement('li');
+  li.innerHTML = `<b>${f.name}</b><span class="size">${kb} KB</span>
+    <a href="/api/download/${currentJob}/${i}">下载</a>`;
+  const link = li.querySelector('a');
+  link.addEventListener('click', async (ev) => {
+    const bridge = desktopBridge();
+    if (!bridge) return;                       // 浏览器：保持默认下载行为
+    ev.preventDefault();
+    link.textContent = '保存中…';
+    try {
+      const r = await bridge.save_file(f.name, String(currentJob), i);
+      if (r && r.ok) {
+        link.textContent = '已保存';
+        $('msg').textContent = `已保存到 ${r.path}`;
+      } else if (r && r.cancelled) {
+        link.textContent = '下载';
+      } else {
+        link.textContent = '重试';
+        $('msg').textContent = (r && r.error) ? r.error : '保存失败';
+      }
+    } catch (err) {
+      link.textContent = '重试';
+      $('msg').textContent = '保存失败：' + (err && err.message ? err.message : err);
+    }
+  });
+  return li;
+}
+
 function renderFiles(files) {
   const ul = $('files');
   ul.innerHTML = '';
-  files.forEach((f, i) => {
-    const li = document.createElement('li');
-    const kb = Math.max(1, Math.round(f.size / 1024));
-    li.innerHTML = `<b>${f.name}</b><span class="size">${kb} KB</span>
-      <a href="/api/download/${currentJob}/${i}">下载</a>`;
-    ul.appendChild(li);
-  });
+  files.forEach((f, i) => ul.appendChild(fileRow(f, i)));
   $('msg').textContent = '完成 —— 下一步：EdrawMind → 导入 → Word';
 }
 

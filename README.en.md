@@ -43,8 +43,10 @@ One drop zone, three secondary options under a hairline rule, one result row. No
 
 Run `md2edrawmind-1.0.0-setup.exe` (installs per-user, no admin rights), then start it from the Start Menu. It opens its **own desktop window**, not a browser tab: drop a `.md` in, then download the result.
 
-> [!NOTE]
-> The build is not code-signed, so Windows may show an "unknown publisher" prompt: choose More info, then Run anyway. The app never goes online and never uploads your notes; the source and build scripts are in this repo.
+> [!IMPORTANT]
+> **Double-click does nothing?** The build is not code-signed, so Windows marks the download as "from the internet" and SmartScreen may block it silently, with no error at all. Right-click the installer, open Properties, tick **Unblock** at the bottom of the General tab, then run it. If Windows still warns you, choose More info, then Run anyway.
+>
+> Or run `Unblock-File .\md2edrawmind-1.0.0-setup.exe` in PowerShell. The app never goes online and never uploads your notes; the source and build scripts are in this repo.
 
 **Conversion failed, or double-click does nothing?** Startup and conversion steps are logged to:
 

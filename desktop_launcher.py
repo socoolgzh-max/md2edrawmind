@@ -128,6 +128,75 @@ def already_running() -> int:
 
 
 # ------------------------------------------------------------------ 主流程
+def fetch_result(port: int, job: str, index: int = 0):
+    """从本地服务取回转换结果（文件名 + 字节）。"""
+    import urllib.request
+
+    url = "http://127.0.0.1:%d/api/download/%s/%d" % (port, job, index)
+    with urllib.request.urlopen(url, timeout=120) as resp:
+        data = resp.read()
+        disp = resp.headers.get("Content-Disposition", "")
+    name = "output.docx"
+    if "filename*=UTF-8''" in disp:
+        from urllib.parse import unquote
+
+        name = unquote(disp.split("filename*=UTF-8''", 1)[1].strip().strip('"'))
+    return name, data
+
+
+class DesktopApi:
+    """暴露给页面的 JS 桥。
+
+    为什么需要它：pywebview 的 WebView2 后端把下载开关写死在 settings
+    (ALLOW_DOWNLOADS=False) 里，且 settings 是不可变字典、start() 也不收这个参数，
+    结果页面里点 <a href=...> 下载会被静默取消（用户看到"点了没反应"）。
+    所以桌面端绕开 WebView2 的下载机制，直接用原生「另存为」对话框落盘。
+    """
+
+    def __init__(self, port: int, window_holder: dict):
+        self.port = port
+        self.holder = window_holder
+
+    def save_file(self, name: str, job: str, index: int = 0) -> dict:
+        import webview
+
+        window = self.holder.get("window")
+        if window is None:
+            return {"ok": False, "error": "窗口未就绪"}
+        try:
+            real_name, data = fetch_result(self.port, job, int(index))
+        except Exception as exc:
+            log("取回结果失败: %r" % exc)
+            return {"ok": False, "error": "取回文件失败：%s" % exc}
+
+        ext = os.path.splitext(real_name)[1] or ".docx"
+        dialog_type = webview.FileDialog.SAVE if hasattr(webview, "FileDialog") else 30
+        try:
+            target = window.create_file_dialog(
+                dialog_type,
+                save_filename=real_name,
+                file_types=("Word 文档 (*.docx)", "文本大纲 (*.txt)", "所有文件 (*.*)"),
+            )
+        except Exception as exc:
+            log("保存对话框失败: %r" % exc)
+            return {"ok": False, "error": "打开保存对话框失败：%s" % exc}
+        if not target:
+            log("用户取消了保存")
+            return {"ok": False, "cancelled": True}
+
+        path = target[0] if isinstance(target, (list, tuple)) else target
+        if not os.path.splitext(path)[1]:
+            path += ext
+        try:
+            with open(path, "wb") as fh:
+                fh.write(data)
+            log("已保存结果: %s (%.1f KB)" % (path, len(data) / 1024))
+            return {"ok": True, "path": path, "size": len(data)}
+        except Exception as exc:
+            log("写文件失败: %r" % exc)
+            return {"ok": False, "error": "写入失败：%s" % exc}
+
+
 def open_native_window(url: str, port: int) -> bool:
     """用一个真正的桌面窗口打开界面（WebView2）。失败则回退到浏览器。
 
@@ -149,16 +218,19 @@ def open_native_window(url: str, port: int) -> bool:
         except OSError:
             continue
 
+    holder: dict = {}
     try:
         log("创建桌面窗口: %s" % url)
         window = webview.create_window(
             "md2edrawmind · 公式笔记 → 思维导图",
             url,
+            js_api=DesktopApi(port, holder),
             width=1080,
             height=820,
             min_size=(420, 560),
             text_select=True,
         )
+        holder["window"] = window
         # gui=None 让 pywebview 自己挑（Windows 上就是 WebView2 / EdgeChromium）
         webview.start(private_mode=False)
         log("窗口已关闭")
