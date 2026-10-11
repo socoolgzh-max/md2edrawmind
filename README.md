@@ -52,12 +52,31 @@ md2edrawmind 换了个思路：**把每条公式渲染成图片嵌进 Word，用
 
 [![下载安装版](https://img.shields.io/badge/%E4%B8%8B%E8%BD%BD-%E5%AE%89%E8%A3%85%E7%89%88%2043%20MB-b4531f?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/socoolgzh-max/md2edrawmind/releases/latest)
 
-下载 `md2edrawmind-1.0.0-setup.exe` 双击安装（装在当前用户目录，不需要管理员权限），装完从开始菜单启动。程序打开的是**自己的桌面窗口**，不是浏览器标签页；窗口里就是操作界面：拖入 `.md`，转换完点下载。
+下载 `md2edrawmind-1.0.0-setup.exe` 双击安装（装在当前用户目录，不需要管理员权限），装完从开始菜单启动。
 
-> [!IMPORTANT]
-> **双击安装包没反应？** 这个版本没有代码签名证书，从浏览器下载的文件会被 Windows 打上「来自网络」标记，SmartScreen 可能直接静默拦掉（连报错都没有）。请先右键安装包 → 属性 → 常规页最下方勾选**「解除锁定」** → 确定，再双击；若弹出「Windows 已保护你的电脑」，点「更多信息 → 仍要运行」。
->
-> 也可以在 PowerShell 里执行 `Unblock-File .\md2edrawmind-1.0.0-setup.exe`。程序不联网、不上传任何内容，源码和打包脚本都在本仓库。
+### 安装前必做：解除锁定
+
+**不勾这一步，双击安装包会毫无反应**：Windows SmartScreen 会静默拦截，不给任何提示。这是缺少代码签名证书导致的，与软件本身无关。
+
+```powershell
+# 在 PowerShell 里执行（路径换成你下载的位置）
+Unblock-File E:\Download\md2edrawmind-1.0.0-setup.exe
+E:\Download\md2edrawmind-1.0.0-setup.exe
+```
+
+或者图形操作：**右键安装包 → 属性 → 常规页最下方勾选「解除锁定」→ 确定**，然后双击。若仍弹出「Windows 已保护你的电脑」，点「更多信息 → 仍要运行」。
+
+### 使用
+
+从开始菜单启动，程序打开的是**自己的桌面窗口**，不是浏览器标签页；拖入 `.md`，转换完点「下载」会弹出保存对话框让你选存放位置。
+
+校验下载是否完整（应输出 `2920291F75AAA9E5FCAB3546F745075969A0963D9640FAD7ED4AED8F1E088260`）：
+
+```powershell
+Get-FileHash .\md2edrawmind-1.0.0-setup.exe -Algorithm SHA256
+```
+
+程序不联网、不上传任何内容，源码与打包脚本都在本仓库。
 
 **转换中途失败或双击没反应？** 启动与转换过程都会写日志，把下面这行粘到文件管理器地址栏即可查看：
 

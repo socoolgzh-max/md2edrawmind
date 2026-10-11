@@ -41,7 +41,20 @@ One drop zone, three secondary options under a hairline rule, one result row. No
 
 [![Download installer](https://img.shields.io/badge/Download-installer%2043%20MB-b4531f?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/socoolgzh-max/md2edrawmind/releases/latest)
 
-Run `md2edrawmind-1.0.0-setup.exe` (installs per-user, no admin rights), then start it from the Start Menu. It opens its **own desktop window**, not a browser tab: drop a `.md` in, then download the result.
+### Unblock the file first (required)
+
+**Without this step, double-clicking the installer does nothing at all** and Windows shows no error: SmartScreen blocks it silently because the build is unsigned.
+
+```powershell
+Unblock-File .\md2edrawmind-1.0.0-setup.exe
+.\md2edrawmind-1.0.0-setup.exe
+```
+
+Or in Explorer: right-click the installer, Properties, tick **Unblock** at the bottom of the General tab. If Windows still warns you, choose More info, then Run anyway.
+
+### Install and use
+
+Run the installer (per-user, no admin rights), then start it from the Start Menu. It opens its **own desktop window**, not a browser tab: drop a `.md` in, then download the result.
 
 > [!IMPORTANT]
 > **Double-click does nothing?** The build is not code-signed, so Windows marks the download as "from the internet" and SmartScreen may block it silently, with no error at all. Right-click the installer, open Properties, tick **Unblock** at the bottom of the General tab, then run it. If Windows still warns you, choose More info, then Run anyway.
