@@ -54,7 +54,7 @@ Or in Explorer: right-click the installer, Properties, tick **Unblock** at the b
 
 ### Install and use
 
-Run the installer (per-user, no admin rights), then start it from the Start Menu. It opens its **own desktop window**, not a browser tab: drop a `.md` in, then download the result.
+Run the installer (per-user, no admin rights), then start it from the Start Menu. It opens its **own desktop window** (no console window appears), not a browser tab: drop a `.md` in, then download the result. Closing the window exits the app.
 
 > [!IMPORTANT]
 > **Double-click does nothing?** The build is not code-signed, so Windows marks the download as "from the internet" and SmartScreen may block it silently, with no error at all. Right-click the installer, open Properties, tick **Unblock** at the bottom of the General tab, then run it. If Windows still warns you, choose More info, then Run anyway.
