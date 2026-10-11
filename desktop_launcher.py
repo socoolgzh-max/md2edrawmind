@@ -20,6 +20,19 @@ import time
 import traceback
 import webbrowser
 
+# 打包为 GUI 子系统（--windowed）后，sys.stdout / sys.stderr 是 None。
+# 有些库或第三方扩展直接写它们会抛异常，这里统一指向空设备兜底。
+# 所有诊断信息仍然会写进 startup.log，不依赖控制台。
+if getattr(sys, "frozen", False):
+    try:
+        _devnull = open(os.devnull, "w", encoding="utf-8")
+        if sys.stdout is None:
+            sys.stdout = _devnull
+        if sys.stderr is None:
+            sys.stderr = _devnull
+    except Exception:
+        pass
+
 
 # ------------------------------------------------------------------ 基础工具
 def app_dir() -> str:

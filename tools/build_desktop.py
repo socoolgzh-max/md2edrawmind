@@ -119,7 +119,10 @@ def build() -> str:
         sys.executable, "-m", "PyInstaller",
         "--noconfirm", "--clean",
         "--name", APP_NAME,
-        "--console",
+        # --windowed：PE 子系统设为 GUI，双击不弹黑色命令行窗口。
+        # 代价是 sys.stdout/stderr 变成 None，所以 desktop_launcher 必须把诊断
+        # 写进 startup.log 并用原生对话框报错，不能依赖控制台输出。
+        "--windowed",
         "--paths", ROOT,
         "--add-data", "%s%s." % (STAGE, os.pathsep),
         "--hidden-import", "md2edrawmind.server",
