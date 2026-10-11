@@ -124,6 +124,11 @@ def build() -> str:
         "--add-data", "%s%s." % (STAGE, os.pathsep),
         "--hidden-import", "md2edrawmind.server",
         "--hidden-import", "md2edrawmind.pipeline",
+        # 桌面窗口：pywebview 在 Windows 上用 WebView2，依赖 pythonnet/clr_loader，
+        # 这些包的 DLL 与数据文件必须显式收集，否则打包后窗口起不来。
+        "--collect-all", "webview",
+        "--collect-all", "clr_loader",
+        "--collect-all", "pythonnet",
         "--exclude-module", "tkinter",
         "--exclude-module", "matplotlib",
         "--exclude-module", "numpy",

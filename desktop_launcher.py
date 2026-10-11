@@ -128,6 +128,46 @@ def already_running() -> int:
 
 
 # ------------------------------------------------------------------ 主流程
+def open_native_window(url: str, port: int) -> bool:
+    """用一个真正的桌面窗口打开界面（WebView2）。失败则回退到浏览器。
+
+    用 pywebview 包一层，界面代码完全复用；用户看到的是独立窗口和任务栏图标，
+    而不是浏览器标签页。
+    """
+    try:
+        import webview
+    except Exception as exc:
+        log("pywebview 不可用（%r），回退到浏览器" % exc)
+        return False
+
+    # 等端口真的可连，避免窗口里出现空白页
+    for _ in range(80):
+        time.sleep(0.25)
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=0.4):
+                break
+        except OSError:
+            continue
+
+    try:
+        log("创建桌面窗口: %s" % url)
+        window = webview.create_window(
+            "md2edrawmind · 公式笔记 → 思维导图",
+            url,
+            width=1080,
+            height=820,
+            min_size=(420, 560),
+            text_select=True,
+        )
+        # gui=None 让 pywebview 自己挑（Windows 上就是 WebView2 / EdgeChromium）
+        webview.start(private_mode=False)
+        log("窗口已关闭")
+        return True
+    except Exception as exc:
+        log("创建窗口失败: %r" % exc)
+        return False
+
+
 def run() -> int:
     log("=" * 56)
     log("md2edrawmind 桌面端启动")
@@ -138,8 +178,9 @@ def run() -> int:
     running = already_running()
     if running:
         url = "http://127.0.0.1:%d/" % running
-        log("已有实例在运行，直接打开 %s" % url)
-        webbrowser.open(url)
+        log("已有实例在运行，直接打开窗口 %s" % url)
+        if not open_native_window(url, running):
+            webbrowser.open(url)
         return 0
 
     wire_env()
@@ -166,38 +207,36 @@ def run() -> int:
     url = "http://127.0.0.1:%d/" % port
     log("监听端口: %d" % port)
 
-    def open_later() -> None:
-        # 等端口真的可连再开浏览器，避免打开空白页
-        for _ in range(80):
-            time.sleep(0.25)
-            try:
-                with socket.create_connection(("127.0.0.1", port), timeout=0.4):
-                    break
-            except OSError:
-                continue
-        log("打开浏览器: %s" % url)
+    # 先在后台线程里跑 HTTP 服务，主线程留给桌面窗口（WebView 必须跑在主线程）
+    def serve() -> None:
         try:
-            opened = webbrowser.open(url)
-            log("webbrowser.open 返回 %s" % opened)
-            if not opened:
-                alert("md2edrawmind 已启动",
-                      "请手动在浏览器打开：\n\n%s\n\n（关掉黑色命令行窗口即停止服务）" % url)
-        except Exception as exc:
-            log("打开浏览器失败: %r" % exc)
-            alert("md2edrawmind 已启动",
-                  "自动打开浏览器失败。\n请手动访问：\n\n%s" % url)
+            run_server(host="127.0.0.1", port=port, open_browser=False)
+        except Exception:
+            log("服务异常:\n%s" % traceback.format_exc())
 
-    threading.Thread(target=open_later, daemon=True).start()
-    log("启动 HTTP 服务 ...")
+    threading.Thread(target=serve, daemon=True).start()
+    log("HTTP 服务已在线程中启动")
+
+    if os.environ.get("MD2EDRAW_USE_BROWSER") == "1":
+        log("按环境变量要求改用系统浏览器")
+        webbrowser.open(url)
+        while True:
+            time.sleep(3600)
+        return 0
+
+    if open_native_window(url, port):
+        return 0
+
+    # 窗口起不来（缺 WebView2 等）就退回浏览器，至少能用
+    alert("md2edrawmind 已启动",
+          "没能创建桌面窗口，已在浏览器里打开界面：\n\n%s\n\n"
+          "（如果浏览器也没打开，请手动复制上面的地址）" % url)
     try:
-        run_server(host="127.0.0.1", port=port, open_browser=False)
-    except KeyboardInterrupt:
-        log("收到中断，退出")
-    except Exception:
-        tb = traceback.format_exc()
-        log("服务异常:\n%s" % tb)
-        alert_error("启动失败", "服务启动时出错：\n\n%s\n\n完整日志：\n%s" % (tb[-500:], log_path()))
-        return 1
+        webbrowser.open(url)
+    except Exception as exc:
+        log("打开浏览器失败: %r" % exc)
+    while True:
+        time.sleep(3600)
     return 0
 
 

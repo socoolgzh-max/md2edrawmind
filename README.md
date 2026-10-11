@@ -32,7 +32,7 @@ md2edrawmind 换了个思路：**把每条公式渲染成图片嵌进 Word，用
 
 ## 界面
 
-界面只有一列：一个拖拽区、一条细线下的三项设置、一行结果。没有账号、不上传、不走云端，窄到手机宽度也能正常用。
+界面只有一列：一个拖拽区、一条细线下的三项设置、一行结果。桌面版把它装在自己的窗口里，没有账号、不上传、不走云端，窄到手机宽度也能正常用。
 
 ![软件界面：拖拽区、三项设置、结果行](docs/gui.png)
 
@@ -48,11 +48,22 @@ md2edrawmind 换了个思路：**把每条公式渲染成图片嵌进 Word，用
 
 ## 下载
 
-**Windows 10 / 11，免安装。** 下载桌面版，解压后双击 `md2edrawmind.exe`，界面会自动在浏览器里打开。
+**Windows 10 / 11，自带全部运行时，什么都不用装。**
 
-[![下载 Windows 版](https://img.shields.io/badge/%E4%B8%8B%E8%BD%BD-Windows%20x64%20(45%20MB)-b4531f?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/socoolgzh-max/md2edrawmind/releases/latest)
+[![下载安装版](https://img.shields.io/badge/%E4%B8%8B%E8%BD%BD-%E5%AE%89%E8%A3%85%E7%89%88%2043%20MB-b4531f?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/socoolgzh-max/md2edrawmind/releases/latest)
 
-桌面版自带 Python 与 Node 运行时，什么都不用装；公式渲染用你机器上已有的 Chrome 或 Edge。习惯命令行的话看[快速开始](#快速开始)。
+下载 `md2edrawmind-1.0.0-setup.exe` 双击安装（装在当前用户目录，不需要管理员权限），装完从开始菜单启动。程序打开的是**自己的桌面窗口**，不是浏览器标签页；窗口里就是操作界面：拖入 `.md`，转换完点下载。
+
+> [!NOTE]
+> 这个版本没有代码签名证书，Windows 可能提示「未知发布者」，点「更多信息 → 仍要运行」即可。程序不联网、不上传任何内容，源码和打包脚本都在本仓库。
+
+**转换中途失败或双击没反应？** 启动与转换过程都会写日志，把下面这行粘到文件管理器地址栏即可查看：
+
+```
+%LOCALAPPDATA%\md2edrawmind\startup.log
+```
+
+桌面版自带 Python 与 Node 运行时；公式渲染用你机器上已有的 Chrome 或 Edge（Windows 一般自带 Edge）。习惯命令行的话看[快速开始](#快速开始)。
 
 ---
 

@@ -37,11 +37,22 @@ One drop zone, three secondary options under a hairline rule, one result row. No
 
 ## Download
 
-**Windows 10 / 11, no install needed.** Grab the desktop build, unzip it, double-click `md2edrawmind.exe`, and the interface opens in your browser.
+**Windows 10 / 11. Everything is bundled, nothing to install.**
 
-[![Download for Windows](https://img.shields.io/badge/Download-Windows%20x64%20(45%20MB)-b4531f?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/socoolgzh-max/md2edrawmind/releases/latest)
+[![Download installer](https://img.shields.io/badge/Download-installer%2043%20MB-b4531f?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/socoolgzh-max/md2edrawmind/releases/latest)
 
-It ships its own Python and Node runtime, so there is nothing to install. Formula rendering uses the Chrome or Edge already on your machine. Prefer the command line? See [Quick start](#quick-start).
+Run `md2edrawmind-1.0.0-setup.exe` (installs per-user, no admin rights), then start it from the Start Menu. It opens its **own desktop window**, not a browser tab: drop a `.md` in, then download the result.
+
+> [!NOTE]
+> The build is not code-signed, so Windows may show an "unknown publisher" prompt: choose More info, then Run anyway. The app never goes online and never uploads your notes; the source and build scripts are in this repo.
+
+**Conversion failed, or double-click does nothing?** Startup and conversion steps are logged to:
+
+```
+%LOCALAPPDATA%\md2edrawmind\startup.log
+```
+
+It ships its own Python and Node runtime. Formula rendering uses the Chrome or Edge already on your machine. Prefer the command line? See [Quick start](#quick-start).
 
 ---
 
